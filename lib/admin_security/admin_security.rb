@@ -2,6 +2,7 @@ module AdminSecurity
   extend ActiveSupport::Concern
 
   included do
+    self.send :helper_method, :current_administrator, :logged_in?
   end
 
   module ClassMethods
