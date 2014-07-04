@@ -51,4 +51,5 @@ In the views :
 <% end %>
 ```
 
+## License
 This project rocks and uses MIT-LICENSE.
