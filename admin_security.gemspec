@@ -7,9 +7,9 @@ require "admin_security/version"
 Gem::Specification.new do |s|
   s.name        = "admin_security"
   s.version     = AdminSecurity::VERSION
-  s.authors     = ["TODO: Your name"]
-  s.email       = ["TODO: Your email"]
-  s.homepage    = "TODO"
+  s.authors     = ["Thomas Balthazar"]
+  s.email       = ["thomas@balthazar.info"]
+  s.homepage    = "https://github.com/tbalthazar/admin_security"
   s.summary     = "TODO: Summary of AdminSecurity."
   s.description = "TODO: Description of AdminSecurity."
   s.license     = "MIT"
