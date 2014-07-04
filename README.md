@@ -1,7 +1,7 @@
 # AdminSecurity
 
 ## Installation
-```
+```ruby
 gem 'admin_security', :git => 'https://github.com/tbalthazar/admin_security'
 ```
 
@@ -9,7 +9,7 @@ gem 'admin_security', :git => 'https://github.com/tbalthazar/admin_security'
 You might want to have an `Administrator` model.
 
 In the controller :
-```
+```ruby
 class Admin::AdminAreaController < ApplicationController
   has_admin_security :login_path => Rails.application.routes.url_helpers.new_admin_session_path
   before_filter :login_required
@@ -45,7 +45,7 @@ end
 ```
 
 In the views :
-```
+```erb
 <% if logged_in? %>
   Welcome <%= current_administrator.name %>.
 <% end %>
