@@ -10,8 +10,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Thomas Balthazar"]
   s.email       = ["thomas@balthazar.info"]
   s.homepage    = "https://github.com/tbalthazar/admin_security"
-  s.summary     = "TODO: Summary of AdminSecurity."
-  s.description = "TODO: Description of AdminSecurity."
+  s.summary     = "A gem that simplifies the use of a restricted (admin) area"
+  s.description = "This gem gives you helper methods to protect some of your controllers"
   s.license     = "MIT"
 
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
