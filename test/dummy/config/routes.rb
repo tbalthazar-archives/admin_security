@@ -5,7 +5,10 @@ Rails.application.routes.draw do
   # You can have the root of your site routed with "root"
   root 'admin_area#index'
   get 'admin_area/protected'
+  get 'admin_area/also_protected'
   get 'admin_area/login'
+  post 'admin_area/create_session'
+  get 'users/index' => 'users#index'
 
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'

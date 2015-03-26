@@ -1,7 +1,7 @@
 class AdminAreaController < ApplicationController
   #has_admin_security :login_path => url_for(:action => :login)
   has_admin_security :login_path => "/admin_area/login"
-  before_filter :login_required, :only => [:protected]
+  before_action :login_required, :only => [:protected, :also_protected]
 
   def index
   end
@@ -9,7 +9,15 @@ class AdminAreaController < ApplicationController
   def protected
   end
 
+  def also_protected
+  end
+
   def login
+  end
+
+  def create_session
+    self.current_administrator = Administrator.find_by(email: params[:email])
+    render text: params.inspect
   end
 
 end

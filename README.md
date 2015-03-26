@@ -12,14 +12,14 @@ In the controller :
 ```ruby
 class Admin::AdminAreaController < ApplicationController
   has_admin_security :login_path => Rails.application.routes.url_helpers.new_admin_session_path
-  before_filter :login_required
+  before_action :login_required
   layout 'admin'
 
 end
 
 
 class Admin::SessionsController < Admin::AdminAreaController
-  before_filter :login_required, :except => [:new, :create]
+  skip_before_action :login_required, :only => [:new, :create]
   
   def new
   end

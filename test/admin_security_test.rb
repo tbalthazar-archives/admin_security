@@ -32,7 +32,7 @@ class AdminSecurityTest < ActionController::TestCase #ActiveSupport::TestCase
   test "login_from_session" do
     get :index
     assert @controller.logged_in? == false, "logged_in? should be false, but is : #{@controller.logged_in?}"
-    session[:admin][:administrator_id] = @administrator.id 
+    session['admin']['administrator_id'] = @administrator.id 
     @controller.login_from_session
     assert @controller.logged_in? == true, "logged_in? should be true, but is : #{@controller.logged_in?}"
   end
@@ -46,6 +46,8 @@ class AdminSecurityTest < ActionController::TestCase #ActiveSupport::TestCase
     get :index
     @controller.current_administrator = @administrator
     get :protected
+    assert_response :success
+    get :also_protected
     assert_response :success
   end
 
