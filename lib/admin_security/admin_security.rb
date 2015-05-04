@@ -53,7 +53,8 @@ module AdminSecurity
     def access_denied
       store_location
       flash[:alert] = "You must be logged in to access this area."
-      redirect_to self.class.options[:login_path]
+      login_path = self.class.options[:login_path] || root_path
+      redirect_to login_path 
       false
     end
 
@@ -69,8 +70,9 @@ module AdminSecurity
     # First attempt to login by the administrator id stored in the session.
     def login_from_session
       session['admin']||={}
-      if session['admin']['administrator_id']
-        self.current_administrator = Administrator.find_by_id(session['admin']['administrator_id'])
+      administrator_block = self.class.options[:administrator_block]
+      if session['admin']['administrator_id'] && administrator_block 
+        self.current_administrator = administrator_block.call(session['admin']['administrator_id'])
       end
     end
    
