@@ -6,13 +6,26 @@ class AdminSecurityTest < ActionController::TestCase
     administrator_block = ->(id) {
       Administrator.find_by(id: id)
     }
+    cookie_auth_block = -> {
+      auth_token = cookies[:auth_token]
+      Administrator.find_by(auth_token: auth_token)
+    }
     options = {
       administrator_block: administrator_block,
+      cookie_auth_block: cookie_auth_block,
       login_path: '/admin_area/login'
     }
     AdminAreaController.has_admin_security options
+    
+    email = "example@example.com"
+    @auth_token = "fake-auth-token"
     @controller = AdminAreaController.new
-    @administrator = Administrator.create!({email: "example@example.com"})
+    @administrator = Administrator.create!({email: email, auth_token: @auth_token})
+  end
+
+  def teardown
+    session = nil
+    @controller = nil
   end
 
   test "truth" do
@@ -28,7 +41,7 @@ class AdminSecurityTest < ActionController::TestCase
 
   test "setting current administrator without specifying an administrator block" do
     get :index
-    AdminAreaController.has_admin_security administrator_block: nil
+    AdminAreaController.options[:administrator_block] = nil
     assert_equal :false, @controller.current_administrator
     @controller.current_administrator = @administrator
     assert_equal :false, @controller.current_administrator, "current_administrator should be :false because the administrator_block failded"
@@ -39,7 +52,7 @@ class AdminSecurityTest < ActionController::TestCase
     administrator_block = ->(id) {
       return nil
     }
-    AdminAreaController.has_admin_security administrator_block: administrator_block
+    AdminAreaController.options[:administrator_block] = administrator_block
     assert_equal :false, @controller.current_administrator
     @controller.current_administrator = @administrator
     assert_equal :false, @controller.current_administrator, "current_administrator should be :false because the administrator_block failded"
@@ -57,7 +70,7 @@ class AdminSecurityTest < ActionController::TestCase
   end
 
   test "logged_in? returns false if no administrator block is specified" do
-    AdminAreaController.has_admin_security administrator_block: nil
+    AdminAreaController.options[:administrator_block] = nil
     get :index
     @controller.current_administrator = @administrator 
     assert_not @controller.logged_in?, "logged_in? should return false because the administrator_block was not specified"
@@ -67,7 +80,7 @@ class AdminSecurityTest < ActionController::TestCase
     administrator_block = ->(id) {
       return nil
     }
-    AdminAreaController.has_admin_security administrator_block: administrator_block
+    AdminAreaController.options[:administrator_block] = administrator_block
     get :index
     @controller.current_administrator = @administrator 
     assert_not @controller.logged_in?, "logged_in? should return false because the administrator_block has failed"
@@ -75,14 +88,13 @@ class AdminSecurityTest < ActionController::TestCase
 
   test "login_from_session" do
     get :index
-    assert_not @controller.logged_in?, "logged_in? should be false, but is : #{@controller.logged_in?}"
+    session['admin'] = {}
     session['admin']['administrator_id'] = @administrator.id 
-    @controller.login_from_session
-    assert @controller.logged_in?, "logged_in? should be true"
+    assert @controller.logged_in?
   end
 
   test "login_from_session fails because no administrator block is given" do
-    AdminAreaController.has_admin_security administrator_block: nil
+    AdminAreaController.options[:administrator_block] = nil
     get :index
     session['admin']||={}
     session['admin']['administrator_id'] = @administrator.id 
@@ -94,12 +106,48 @@ class AdminSecurityTest < ActionController::TestCase
     administrator_block = ->(id) {
       return nil
     }
-    AdminAreaController.has_admin_security administrator_block: administrator_block
+    AdminAreaController.options[:administrator_block] = administrator_block
     get :index
     session['admin']||={}
     session['admin']['administrator_id'] = @administrator.id 
     @controller.login_from_session
     assert_not @controller.logged_in?, "logged_in? should be false"
+  end
+
+  test "login_from_cookie" do
+    cookies[:auth_token] = @auth_token
+    get :index
+    assert @controller.logged_in?
+  end
+
+  test "login_from_cookie should fail if cookie_auth_block fails" do
+    cookies[:auth_token] = @auth_token + "modified"
+    get :index
+    assert_not @controller.logged_in?
+  end
+
+  test "login_from_cookie should fail if no cookie_auth_block is given" do
+    cookies[:auth_token] = @auth_token
+    AdminAreaController.options[:cookie_auth_block] = nil
+    get :index
+    assert_not @controller.logged_in?
+  end
+
+  test "login_from_cookie should fail if no administrator block is given" do
+    AdminAreaController.options[:administrator_block] = nil
+    cookies[:auth_token] = @auth_token
+    get :index
+    assert_not @controller.logged_in?
+  end
+
+  test "login_from_cookie should fail if administrator block fails" do
+    administrator_block = ->(id) {
+      return nil
+    }
+    AdminAreaController.options[:administrator_block] = administrator_block
+    cookies[:auth_token] = @auth_token
+    get :index
+    assert_not @controller.logged_in?
   end
 
   test "login_required redirects to login page" do

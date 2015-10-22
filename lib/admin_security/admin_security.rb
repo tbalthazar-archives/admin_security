@@ -33,13 +33,15 @@ module AdminSecurity
       session['admin']['administrator_id'] = nil
       @current_administrator = nil
 
-      return if new_administrator.nil? || new_administrator.is_a?(Symbol)
+      return nil if new_administrator.nil? || new_administrator.is_a?(Symbol)
 
       validated_administrator = validated_administrator(new_administrator.id)
       if validated_administrator
         session['admin']['administrator_id'] = validated_administrator.id
         @current_administrator = validated_administrator
       end
+
+      return @current_administrator
     end
    
     # --- used in views too
@@ -47,7 +49,7 @@ module AdminSecurity
     # Accesses the current administrator from the session.  Set it to :false if login fails
     # so that future calls do not hit the database.
     def current_administrator
-      @current_administrator ||= (login_from_session || :false)
+      @current_administrator ||= (login_from_session || login_from_cookie || :false)
     end
     
     # Returns true or false if the administrator is logged in.
@@ -66,7 +68,6 @@ module AdminSecurity
     end
 
     # Store the URI of the current request in the session.
-    #
     # We can return to this location by calling #redirect_back_or_default.
     def store_location
       session['admin']||={}
@@ -78,7 +79,20 @@ module AdminSecurity
     def login_from_session
       session['admin']||={}
       if session['admin']['administrator_id']
-        @current_administrator = validated_administrator(session['admin']['administrator_id'])
+        return validated_administrator(session['admin']['administrator_id'])
+      else
+        return nil
+      end
+    end
+
+    # Called from #current_administrator.
+    def login_from_cookie
+      cookie_auth_block = self.class.options[:cookie_auth_block]
+      if cookie_auth_block.nil?
+        return nil
+      else
+        self.current_administrator = cookie_auth_block.call
+        return @current_administrator
       end
     end
 
