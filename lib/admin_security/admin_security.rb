@@ -27,12 +27,19 @@ module AdminSecurity
       session['admin']['return_to'] = nil
     end
 
-   # Store the given administrator in the session.
+    # Store the given administrator in the session.
     def current_administrator=(new_administrator)
-      new_administrator_is_invalid = (new_administrator.nil? || new_administrator.is_a?(Symbol))
       session['admin']||={}
-      session['admin']['administrator_id'] = new_administrator_is_invalid ? nil : new_administrator.id
-      @current_administrator = new_administrator
+      session['admin']['administrator_id'] = nil
+      @current_administrator = nil
+
+      return if new_administrator.nil? || new_administrator.is_a?(Symbol)
+
+      validated_administrator = validated_administrator(new_administrator.id)
+      if validated_administrator
+        session['admin']['administrator_id'] = validated_administrator.id
+        @current_administrator = validated_administrator
+      end
     end
    
     # --- used in views too
@@ -70,9 +77,20 @@ module AdminSecurity
     # First attempt to login by the administrator id stored in the session.
     def login_from_session
       session['admin']||={}
+      if session['admin']['administrator_id']
+        @current_administrator = validated_administrator(session['admin']['administrator_id'])
+      end
+    end
+
+    private
+
+    # calls the administrator_block to validate the administrator
+    def validated_administrator(administrator_id)
       administrator_block = self.class.options[:administrator_block]
-      if session['admin']['administrator_id'] && administrator_block 
-        self.current_administrator = administrator_block.call(session['admin']['administrator_id'])
+      if administrator_block.nil?
+        return nil
+      else
+        return administrator_block.call(administrator_id)
       end
     end
    
