@@ -6,8 +6,7 @@ class AdminSecurityTest < ActionController::TestCase
     administrator_block = ->(id) {
       Administrator.find_by(id: id)
     }
-    cookie_auth_block = -> {
-      auth_token = cookies[:auth_token]
+    cookie_auth_block = ->(auth_token) {
       Administrator.find_by(auth_token: auth_token)
     }
     options = {
@@ -115,19 +114,26 @@ class AdminSecurityTest < ActionController::TestCase
   end
 
   test "login_from_cookie" do
-    cookies[:auth_token] = @auth_token
+    cookies.signed[:auth_token] = @auth_token
+    get :index
+    assert @controller.logged_in?
+  end
+
+  test "login_from_cookie with custom cookies key" do
+    AdminAreaController.options[:cookie_auth_key] = :funky_auth_key
+    cookies.signed[:funky_auth_key] = @auth_token
     get :index
     assert @controller.logged_in?
   end
 
   test "login_from_cookie should fail if cookie_auth_block fails" do
-    cookies[:auth_token] = @auth_token + "modified"
+    cookies.signed[:auth_token] = @auth_token + "modified"
     get :index
     assert_not @controller.logged_in?
   end
 
   test "login_from_cookie should fail if no cookie_auth_block is given" do
-    cookies[:auth_token] = @auth_token
+    cookies.signed[:auth_token] = @auth_token
     AdminAreaController.options[:cookie_auth_block] = nil
     get :index
     assert_not @controller.logged_in?
@@ -135,7 +141,7 @@ class AdminSecurityTest < ActionController::TestCase
 
   test "login_from_cookie should fail if no administrator block is given" do
     AdminAreaController.options[:administrator_block] = nil
-    cookies[:auth_token] = @auth_token
+    cookies.signed[:auth_token] = @auth_token
     get :index
     assert_not @controller.logged_in?
   end
@@ -145,7 +151,7 @@ class AdminSecurityTest < ActionController::TestCase
       return nil
     }
     AdminAreaController.options[:administrator_block] = administrator_block
-    cookies[:auth_token] = @auth_token
+    cookies.signed[:auth_token] = @auth_token
     get :index
     assert_not @controller.logged_in?
   end

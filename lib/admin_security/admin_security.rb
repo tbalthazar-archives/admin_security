@@ -91,7 +91,9 @@ module AdminSecurity
       if cookie_auth_block.nil?
         return nil
       else
-        self.current_administrator = cookie_auth_block.call
+        key = self.class.options[:cookie_auth_key] || :auth_token
+        auth_token = cookies.signed[key]
+        self.current_administrator = cookie_auth_block.call(auth_token)
         return @current_administrator
       end
     end
