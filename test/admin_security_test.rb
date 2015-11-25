@@ -161,6 +161,24 @@ class AdminSecurityTest < ActionController::TestCase
     assert_redirected_to action: :login
   end
 
+  test "default flash message for access_denied" do
+    get :protected
+    assert_equal "You must be logged in to access this area.", flash[:alert]
+  end
+
+  test "custom flash message for access_denied" do
+    custom_message = "custom message for access denied"
+    AdminAreaController.has_admin_security access_denied_message: custom_message
+    get :protected
+    assert_equal custom_message, flash[:alert]
+  end
+
+  test "empty flash message for access_denied" do
+    AdminAreaController.has_admin_security access_denied_message: nil
+    get :protected
+    assert_nil flash[:alert]
+  end
+
   test "login_required redirects to root path if no login path given" do
     AdminAreaController.has_admin_security login_path: nil
     get :protected

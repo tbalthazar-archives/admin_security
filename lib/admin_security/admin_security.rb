@@ -61,7 +61,8 @@ module AdminSecurity
     # Redirect as appropriate when an access request fails.
     def access_denied
       store_location
-      flash[:alert] = "You must be logged in to access this area."
+      default_message = "You must be logged in to access this area."
+      flash[:alert] = self.class.options.fetch(:access_denied_message, default_message)
       login_path = self.class.options[:login_path] || root_path
       redirect_to login_path 
       false
