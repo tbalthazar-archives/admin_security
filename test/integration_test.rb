@@ -17,7 +17,7 @@ class IntegrationTest < ActionDispatch::IntegrationTest
 
   test "current_administrator is stored between controllers" do
     # login
-    post '/admin_area/create_session', { email: @administrator.email }
+    post '/admin_area/create_session', params: { email: @administrator.email }
 
     # access a protected method
     get '/admin_area/protected'
@@ -40,7 +40,7 @@ class IntegrationTest < ActionDispatch::IntegrationTest
     UsersController.has_admin_security options
 
     # login
-    post '/admin_area/create_session', { email: @administrator.email }
+    post '/admin_area/create_session', params: { email: @administrator.email }
 
     # access a protected method
     get '/admin_area/protected'

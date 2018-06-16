@@ -16,7 +16,7 @@ class AdminAreaController < ApplicationController
 
   def create_session
     self.current_administrator = Administrator.find_by(email: params[:email])
-    render text: params.inspect
+    render plain: params.inspect
   end
 
 end

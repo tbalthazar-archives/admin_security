@@ -3,7 +3,7 @@ class UsersController < ApplicationController
   before_action :login_required
 
   def index
-    render text: "hey"
+    render plain: "hey"
   end
 
 end
